@@ -56,6 +56,7 @@ forest1 <- randomForest(barberi$biomass ~ barberi$number_of_roots_colonized_by_a
 forest2 <- randomForest(barberi$biomass ~ barberi$number_of_roots_colonized_by_dse_fungi)
 forest3 <- randomForest(barberi$biomass ~ barberi$number_of_roots_colonized_by_nonfilamentous_fungi)
 forest4 <- randomForest(barberi$height ~ barberi$biomass)
+forest5 <- randomForest(barberi$biomass ~ barberi$height)
 
 forest0
 plot(forest0)
@@ -71,6 +72,54 @@ plot(forest3)
 
 forest4
 plot(forest4)
+
+forest5
+plot(forest5)
 ```
 
 Is that it? Is that random forests? Is the only thing left now interpretation? 
+
+
+```{r}
+#install.packages("randomForest")
+library(randomForest)
+set.seed(1026)
+
+#only nitrogen
+brookeriana <- subset(greenhouse, greenhouse$species == "E. brookeriana")
+brookertree <- randomForest(brookeriana$biomass ~ as.factor(brookeriana$nitrogen), na.action = na.exclude)
+
+brookertree
+plot(brookertree)
+```
+
+
+That just calls for interpretation, right?
+
+
+```{r}
+#install.packages("randomForest")
+library(randomForest)
+set.seed(1026)
+
+#with nitrogen
+gunnii <- subset(greenhouse, greenhouse$species == "E. gunnii")
+gunniitree <- randomForest(gunnii$biomass ~ as.factor(gunnii$nitrogen) + 
+                             barberi$number_of_roots_colonized_by_ecm_fungi + 
+                             barberi$number_of_roots_colonized_by_am_fungi + 
+                             barberi$number_of_roots_colonized_by_dse_fungi +
+                             barberi$number_of_roots_colonized_by_nonfilamentous_fungi, na.action = na.exclude)
+
+gunniitree
+plot(gunniitree)
+
+#Without nitrogen factored in.
+gunnii <- subset(greenhouse, greenhouse$species == "E. gunnii")
+ngunniitree <- randomForest(gunnii$biomass ~ barberi$number_of_roots_colonized_by_ecm_fungi + 
+                             barberi$number_of_roots_colonized_by_am_fungi + 
+                             barberi$number_of_roots_colonized_by_dse_fungi +
+                             barberi$number_of_roots_colonized_by_nonfilamentous_fungi, na.action = na.exclude)
+
+ngunniitree
+plot(gunniitree)
+```
