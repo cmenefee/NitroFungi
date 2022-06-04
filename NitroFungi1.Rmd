@@ -1,0 +1,70 @@
+---
+title: "Soil fungi underlie a phylogenetic pattern in plant growth responses to nitrogen enrichment - Random Forests"
+output: html_notebook
+---
+
+```{r}
+# install.packages("RPostgreSQL")
+require("RPostgreSQL")
+
+# Load the PostgreSQL driver, create a connection to the postgres database
+drv <- dbDriver("PostgreSQL")
+con <- dbConnect(drv, dbname = "nitrofungi", host = "localhost", port = 5432, user = "ruser", password = "ruser")
+
+sequencing_sql_string <- paste("SELECT * FROM sequencing", sep="")
+greenhouse_sql_string <- paste("SELECT * FROM greenhouse", sep="")
+
+sequencing <- data.frame(dbGetQuery(con, sequencing_sql_string))
+greenhouse <- data.frame(dbGetQuery(con, greenhouse_sql_string))
+```
+
+So considering "....Our results confirm that interactions with soil fungi (ECM fungi in particular) underlie phylogenetic patterns in tree species’ growth responses to N enrichment and may thus influence which plants win or lose under future N deposition scenarios...."
+
+In response to the output from:
+```{r}
+#install.packages("randomForest")
+library(randomForest)
+
+set.seed(1026)
+
+forest0 <- randomForest(barberi$biomass ~ barberi$number_of_roots_colonized_by_ecm_fungi)
+
+barberi <- subset(greenhouse, greenhouse$species == "E. barberi")
+barberitree <- randomForest(barberi$biomass ~ as.factor(barberi$nitrogen) + 
+                             barberi$number_of_roots_colonized_by_ecm_fungi + 
+                             barberi$number_of_roots_colonized_by_am_fungi + 
+                             barberi$number_of_roots_colonized_by_dse_fungi +
+                             barberi$number_of_roots_colonized_by_nonfilamentous_fungi, na.action = na.exclude)
+
+barberitree
+plot(barberitree)
+varImpPlot(barberitree)
+```
+
+
+
+I think we can build some loops to look at all the tree species:
+```{r}
+#install.packages("randomForest")
+library(randomForest)
+
+set.seed(1026)
+
+for(i in unique(greenhouse$species))
+  {
+    print(i)
+
+    tree <- subset(greenhouse, greenhouse$species == i)
+    tree_forest <- randomForest(tree$biomass ~ as.factor(tree$nitrogen) + 
+                             tree$number_of_roots_colonized_by_ecm_fungi +
+                             tree$number_of_roots_colonized_by_am_fungi +
+                             tree$number_of_roots_colonized_by_dse_fungi +
+                             tree$number_of_roots_colonized_by_nonfilamentous_fungi, na.action = na.exclude)
+
+tree_forest
+plot(tree_forest, main = paste(i))
+varImpPlot(tree_forest, main = paste(i))
+  }
+
+```
+
