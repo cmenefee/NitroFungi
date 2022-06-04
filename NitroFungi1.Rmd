@@ -50,7 +50,7 @@ library(randomForest)
 
 set.seed(1026)
 
-for(i in unique(greenhouse$species))
+  for(i in unique(greenhouse$species))
   {
     print(i)
 
